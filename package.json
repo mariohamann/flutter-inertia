@@ -1,0 +1,11 @@
+{
+  "name": "flutter-inertia",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./www dev\" \"cd example && flutter run -d macos\"",
+    "dev:ios": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./www dev\" \"cd example && flutter run -d ios\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

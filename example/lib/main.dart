@@ -29,8 +29,7 @@ class NotesScreen extends StatelessWidget {
       body: SafeArea(
         child: InertiaWebView(
           router: AppRouter(),
-          // Uncomment for Vite HMR during development:
-          // devServerUrl: 'http://localhost:5173',
+          devServerUrl: 'http://localhost:5173',
         ),
       ),
     );
