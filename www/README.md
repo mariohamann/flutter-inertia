@@ -1,5 +1,24 @@
-# Vue 3 + TypeScript + Vite
+# www
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+The web frontend for the `flutter_inertia` example. Vue 3 + Inertia.js, built to a single
+`index.html` via `vite-plugin-singlefile` and loaded as a Flutter asset.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Dev
+
+```bash
+pnpm dev          # Vite dev server at http://localhost:5173 (HMR)
+pnpm build        # Build to ../assets/www/index.html
+pnpm build:example  # Build + copy to ../example/assets/www/index.html
+```
+
+## Structure
+
+| Path | Role |
+|------|------|
+| `src/main.ts` | Bootstrap — calls `setupNativeAdapter()` then `createInertiaApp()` |
+| `src/pages/Counter/Index.vue` | Counter page — props: `{ count: number }` |
+| `src/style.css` | Minimal base styles (no framework) |
+| `vite.config.ts` | Vite config — singlefile build, alias for `flutter-inertia-adapter` |
+
+The `flutter-inertia-adapter` package (`packages/flutter-inertia-adapter/`) is resolved
+directly from source via the Vite alias — no pre-build needed in development.

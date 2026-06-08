@@ -1,0 +1,9 @@
+packages/
+www/
+assets/www/
+pnpm-workspace.yaml
+pnpm-lock.yaml
+package.json
+*.iml
+.vscode/
+inspiration/

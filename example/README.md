@@ -1,17 +1,24 @@
 # example
 
-A new Flutter project.
+A counter app demonstrating `flutter_inertia` — a persistent counter backed by
+`shared_preferences`, with increment / decrement / reset actions driven by Inertia.js.
 
-## Getting Started
+## Run
 
-This project is a starting point for a Flutter application.
+```bash
+# Dev (HMR web + Flutter side by side, from repo root)
+pnpm dev
 
-A few resources to get you started if this is your first Flutter project:
+# Or run Flutter alone (production asset)
+pnpm --filter ./www build:example
+cd example && flutter run -d macos   # or -d ios / -d android
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Structure
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| File | Role |
+|------|------|
+| `lib/main.dart` | Entry point — plain `MaterialApp` + `InertiaWebView` |
+| `lib/app_router.dart` | Route table: `GET /`, `POST /increment`, `/decrement`, `/reset` |
+| `lib/counter_controller.dart` | Reads/writes count via `shared_preferences` |
+| `assets/www/index.html` | Built web app (generated — run `pnpm build:example`) |

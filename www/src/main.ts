@@ -1,8 +1,9 @@
 import { createApp, h, type DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { setupNativeAdapter } from './inertia-native-adapter';
+import { setupNativeAdapter } from 'flutter-inertia-adapter';
+import './style.css';
 
-// Must be called before createInertiaApp so the XHR shim is in place
+// Must be called before createInertiaApp so the HTTP shim is in place
 // when Inertia makes its initial page request.
 setupNativeAdapter();
 

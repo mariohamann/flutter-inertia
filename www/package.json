@@ -12,6 +12,7 @@
   "dependencies": {
     "@inertiajs/core": "^3.0.3",
     "@inertiajs/vue3": "^3.0.3",
+    "flutter-inertia-adapter": "workspace:*",
     "vue": "^3.5.32"
   },
   "devDependencies": {

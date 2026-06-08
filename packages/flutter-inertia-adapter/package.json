@@ -1,0 +1,32 @@
+{
+  "name": "flutter-inertia-adapter",
+  "version": "0.1.0",
+  "description": "Framework-agnostic Inertia.js HTTP adapter for Flutter WebView",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
+  },
+  "peerDependencies": {
+    "@inertiajs/core": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@inertiajs/core": "^3.0.3",
+    "tsup": "^8.0.0",
+    "typescript": "~5.8.0"
+  }
+}
