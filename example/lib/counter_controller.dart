@@ -7,25 +7,25 @@ class CounterController {
     return Inertia.render(
       component: 'Counter/Index',
       props: {'count': prefs.getInt('count') ?? 0},
-      url: '/',
+      url: '/counter',
     );
   }
 
   static Future<String> increment() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('count', (prefs.getInt('count') ?? 0) + 1);
-    return Inertia.redirect('/');
+    return Inertia.redirect('/counter');
   }
 
   static Future<String> decrement() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('count', (prefs.getInt('count') ?? 0) - 1);
-    return Inertia.redirect('/');
+    return Inertia.redirect('/counter');
   }
 
   static Future<String> reset() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('count', 0);
-    return Inertia.redirect('/');
+    return Inertia.redirect('/counter');
   }
 }
