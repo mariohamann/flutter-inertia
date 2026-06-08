@@ -5,6 +5,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [vue(), viteSingleFile()],
+  server: { port: 5173, strictPort: true },
   resolve: {
     alias: {
       // Resolve workspace package directly from source — no pre-build needed in dev.

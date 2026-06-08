@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"vite\" \"flutter run -d macos\"",
-    "dev:ios": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"vite\" \"flutter run -d ios\"",
+    "dev:ios": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"vite\" \"flutter run -d 57645426-B15A-4F3C-ACF0-48E3927E0DC2\"",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
   },
