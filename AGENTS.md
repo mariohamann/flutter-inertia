@@ -52,8 +52,8 @@ export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$P
 # Dev: HMR web server + Flutter side by side
 pnpm dev          # from repo root (runs vite + flutter run concurrently)
 
-# Build web → assets/www/index.html → copy to example/assets/www/
-pnpm --filter ./www build:example
+# Build web → example/assets/www/index.html
+pnpm --filter ./example build:example
 
 # Dart analysis
 flutter analyze lib/ example/lib/

@@ -188,7 +188,7 @@ class ItemController {
 }
 ```
 
-**3. Create the page in `www/src/pages/Items/Index.vue`:**
+**3. Create the page in `example/src/pages/Items/Index.vue`:**
 ```vue
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3'
@@ -218,7 +218,7 @@ defineProps<{ items: { id: string; name: string }[] }>()
   from `@inertiajs/core` — there is no Axios in this stack.
 - **Dev**: `devServerUrl: 'http://localhost:5173'` enables HMR. Remove or leave `null` for
   production; the widget then loads `assets/www/index.html`.
-- **Build**: `pnpm --filter ./www build:example` compiles the web app and copies it to
+- **Build**: `pnpm --filter ./example build:example` compiles the web app and copies it to
   `example/assets/www/index.html` for Flutter to bundle.
 
 ## Request shape (JS → Dart)

@@ -2,9 +2,9 @@
   "name": "flutter-inertia",
   "private": true,
   "scripts": {
-    "build": "export PATH=\"/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH\" && cd www && pnpm build:example && cd ../example && flutter build macos --release && cd build/macos/Build/Products/Release && ditto -c -k --keepParent \"Solid Flutter Demo.app\" ~/Desktop/SolidFlutterDemo.zip && echo \"Zipped to Desktop\"",
-    "dev": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./www dev\" \"cd example && flutter run -d macos\"",
-    "dev:ios": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./www dev\" \"cd example && flutter run -d ios\""
+    "build": "pnpm --filter ./example build:example",
+    "dev": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./example dev\" \"cd example && flutter run -d macos\"",
+    "dev:ios": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./example dev\" \"cd example && flutter run -d ios\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

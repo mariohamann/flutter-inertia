@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: resolve(__dirname, '../assets/www'),
+    outDir: resolve(__dirname, 'assets/www'),
     emptyOutDir: true,
     rollupOptions: {
       output: { inlineDynamicImports: true },

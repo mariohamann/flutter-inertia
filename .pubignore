@@ -1,6 +1,5 @@
 node_modules/
 packages/
-www/
 assets/www/
 pnpm-workspace.yaml
 pnpm-lock.yaml

@@ -12,19 +12,7 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1
 
-  packages/flutter-inertia-adapter:
-    devDependencies:
-      '@inertiajs/core':
-        specifier: ^3.0.3
-        version: 3.3.1
-      tsup:
-        specifier: ^8.0.0
-        version: 8.5.1(postcss@8.5.15)(typescript@5.8.3)
-      typescript:
-        specifier: ~5.8.0
-        version: 5.8.3
-
-  www:
+  example:
     dependencies:
       '@inertiajs/core':
         specifier: ^3.0.3
@@ -60,6 +48,18 @@ importers:
       vue-tsc:
         specifier: ^3.2.7
         version: 3.3.3(typescript@6.0.3)
+
+  packages/flutter-inertia-adapter:
+    devDependencies:
+      '@inertiajs/core':
+        specifier: ^3.0.3
+        version: 3.3.1
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.15)(typescript@5.8.3)
+      typescript:
+        specifier: ~5.8.0
+        version: 5.8.3
 
 packages:
 
