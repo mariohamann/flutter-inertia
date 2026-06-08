@@ -2,11 +2,8 @@
   "name": "flutter-inertia",
   "private": true,
   "scripts": {
-    "build": "pnpm --filter ./example build:example",
-    "dev": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./example dev\" \"cd example && flutter run -d macos\"",
-    "dev:ios": "concurrently --kill-others --names vite,flutter --prefix-colors cyan,magenta \"pnpm --filter ./example dev\" \"cd example && flutter run -d ios\""
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.1"
+    "dev": "pnpm --filter ./example dev",
+    "dev:ios": "pnpm --filter ./example dev:ios",
+    "build": "pnpm --filter ./example build"
   }
 }

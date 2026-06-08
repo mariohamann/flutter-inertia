@@ -6,11 +6,7 @@ settings:
 
 importers:
 
-  .:
-    devDependencies:
-      concurrently:
-        specifier: ^9.2.1
-        version: 9.2.1
+  .: {}
 
   example:
     dependencies:
@@ -36,6 +32,9 @@ importers:
       '@vue/tsconfig':
         specifier: ^0.9.1
         version: 0.9.1(typescript@6.0.3)(vue@3.5.35(typescript@6.0.3))
+      concurrently:
+        specifier: ^9.2.1
+        version: 9.2.1
       typescript:
         specifier: ~6.0.2
         version: 6.0.3
