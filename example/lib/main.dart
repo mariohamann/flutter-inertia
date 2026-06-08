@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inertia/flutter_inertia.dart';
 import 'app_router.dart';
@@ -16,7 +17,7 @@ class App extends StatelessWidget {
       home: Scaffold(
         body: InertiaWebView(
           router: AppRouter(),
-          devServerUrl: 'http://localhost:5173',
+          devServerUrl: kDebugMode ? 'http://localhost:5173' : null,
         ),
       ),
     );

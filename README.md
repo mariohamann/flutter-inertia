@@ -37,12 +37,15 @@ npm install flutter-inertia-adapter
 
 ## Setup
 
-**Flutter** — drop `InertiaWebView` anywhere in your widget tree:
+**Flutter** — drop `InertiaWebView` anywhere in your widget tree. Use `kDebugMode` to
+automatically switch between the Vite dev server and the bundled asset:
 
 ```dart
+import 'package:flutter/foundation.dart';
+
 InertiaWebView(
   router: AppRouter(),
-  devServerUrl: 'http://localhost:5173', // omit in production
+  devServerUrl: kDebugMode ? 'http://localhost:5173' : null,
 )
 ```
 
@@ -132,7 +135,8 @@ The component name passed to `Inertia.render()` maps directly to `src/pages/<nam
 
 ## Example
 
-See [`example/`](example/) — a persistent counter backed by `shared_preferences`.
+See [`example/`](example/) — demonstrates a homepage, persistent counter, notes CRUD app, and
+local notification trigger, all backed by Flutter plugins.
 
 ---
 
@@ -161,9 +165,9 @@ calls the handler, and evaluates the returned JS string in the WebView via `runJ
 **1. Register it in `lib/app_router.dart`:**
 ```dart
 get('/items', (req) => ItemController.index());
-post('/items', (req) => ItemController.store(req.body));
+post('/items', (req) => ItemController.store(req));
 get('/items/:id', (req) => ItemController.show(req.param('id')!));
-patch('/items/:id', (req) => ItemController.update(req.param('id')!, req.body));
+patch('/items/:id', (req) => ItemController.update(req.param('id')!, req));
 delete('/items/:id', (req) => ItemController.destroy(req.param('id')!));
 ```
 
@@ -177,11 +181,11 @@ class ItemController {
     return Inertia.render(
       component: 'Items/Index',
       props: {'items': []},
-      url: '/',
+      url: '/items',
     );
   }
 
-  static Future<String> store(Map<String, dynamic> body) async {
+  static Future<String> store(dynamic req) async {
     // mutate, then redirect — the adapter follows it automatically
     return Inertia.redirect('/items');
   }
@@ -216,8 +220,10 @@ defineProps<{ items: { id: string; name: string }[] }>()
 - **Methods arrive lowercase** (`'get'`, `'post'`). The router normalises them — don't change this.
 - **Inertia v3 uses `HttpClient`, not Axios interceptors.** The adapter calls `http.setClient()`
   from `@inertiajs/core` — there is no Axios in this stack.
-- **Dev**: `devServerUrl: 'http://localhost:5173'` enables HMR. Remove or leave `null` for
-  production; the widget then loads `assets/www/index.html`.
+- **Dev/prod switching is automatic**: use `devServerUrl: kDebugMode ? 'http://localhost:5173' : null`.
+  In debug mode Flutter loads from Vite (HMR); in release mode it loads `assets/www/index.html`.
+  Never hardcode the URL or comment it out manually.
+- **Dev**: run `pnpm dev` (Vite) and `flutter run` in two separate terminals.
 - **Build**: `pnpm --filter ./example build:example` compiles the web app and copies it to
   `example/assets/www/index.html` for Flutter to bundle.
 

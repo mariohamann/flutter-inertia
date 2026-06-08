@@ -1,7 +1,6 @@
 # flutter_inertia example
 
-A persistent counter app demonstrating `flutter_inertia` — increment, decrement, and reset actions
-driven by Inertia.js, state stored via `shared_preferences`.
+Demonstrates `flutter_inertia` with multiple examples: a counter, a notes CRUD app, and a local notification trigger.
 
 ## Prerequisites
 
@@ -19,11 +18,14 @@ flutter pub get     # Dart dependencies
 
 ## Dev mode
 
-Starts Vite (HMR) and Flutter side by side:
+Run these two commands in separate terminals:
 
 ```bash
-pnpm dev          # macOS desktop
-pnpm dev:ios      # iOS simulator
+# Terminal 1 — Vite dev server with HMR
+pnpm dev
+
+# Terminal 2 — Flutter
+flutter run
 ```
 
 > `devServerUrl: 'http://localhost:5173'` in `lib/main.dart` makes Flutter load the app live
@@ -35,8 +37,8 @@ pnpm dev:ios      # iOS simulator
 # 1. Build the web app into assets/www/index.html
 pnpm build
 
-# 2. Comment out devServerUrl in lib/main.dart, then run Flutter
-flutter run -d macos   # or -d ios / -d android
+# 2. Run Flutter in release mode — it will load the bundled asset automatically
+flutter run --release
 ```
 
 ## Structure
@@ -44,9 +46,15 @@ flutter run -d macos   # or -d ios / -d android
 | Path | Role |
 |------|------|
 | `lib/main.dart` | Entry point — `MaterialApp` + `InertiaWebView` |
-| `lib/app_router.dart` | Routes: `GET /`, `POST /increment`, `/decrement`, `/reset` |
+| `lib/app_router.dart` | All route registrations |
+| `lib/home_controller.dart` | Renders the home screen |
 | `lib/counter_controller.dart` | Reads/writes count via `shared_preferences` |
-| `src/pages/Counter/Index.vue` | Counter UI — buttons call `router.post(...)` |
+| `lib/notes_controller.dart` | Full notes CRUD via `shared_preferences` |
+| `lib/notification_controller.dart` | Triggers local notifications |
+| `src/pages/Home/Index.vue` | Home screen linking to all examples |
+| `src/pages/Counter/Index.vue` | Counter UI |
+| `src/pages/Notes/` | Notes list, create, show, and edit pages |
+| `src/pages/Notification/Index.vue` | Notification trigger UI |
 | `src/main.ts` | Calls `setupNativeAdapter()` then `createInertiaApp()` |
 | `vite.config.ts` | Builds to `assets/www/index.html` via `vite-plugin-singlefile` |
 | `assets/www/index.html` | Built web app (gitignored — generate with `pnpm build`) |
