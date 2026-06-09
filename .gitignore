@@ -12,6 +12,7 @@ node_modules/
 .flutter-plugins-dependencies
 *.iml
 build/
+pubspec.lock
 
 # IDE
 .vscode/
