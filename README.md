@@ -98,6 +98,56 @@ return Inertia.redirect('/');
 The redirects are followed transparently — the adapter makes the follow-up GET automatically,
 so the web layer always receives a rendered page, never a bare redirect.
 
+## Shared Data
+
+Some data — like the current user or app-wide settings — is needed on many pages. Instead of
+passing it manually in every handler, override `sharedProps()` in your router:
+
+```dart
+class AppRouter extends InertiaRouter {
+  @override
+  void setupRoutes() {
+    get('/', (req) => HomeController.index());
+    get('/profile', (req) => ProfileController.show());
+    // ...
+  }
+
+  @override
+  Future<Map<String, dynamic>> sharedProps() async {
+    return {
+      'auth': {
+        'user': await AuthService.currentUser(),
+      },
+    };
+  }
+}
+```
+
+`sharedProps()` is called on every request and its result is shallow-merged with the page props
+before the response is sent. Page-level props take precedence when the same top-level key appears
+in both — shared props are the fallback.
+
+**Rules:**
+- Shared props are injected into every `Inertia.render()` response; `Inertia.redirect()` responses
+  are unaffected.
+- The merge is **shallow** — only top-level keys are compared. To avoid accidental overrides,
+  namespace your shared data (e.g. `auth`, `flash`, `meta`).
+- `sharedProps()` is `async` — you can call plugins, storage, or services here.
+
+**Accessing shared data on the web side** works exactly like normal props:
+
+```vue
+<script setup lang="ts">
+import { usePage } from '@inertiajs/vue3'
+const auth = usePage().props.auth
+</script>
+
+<template>
+  <header>Logged in as: {{ auth.user?.name }}</header>
+</template>
+```
+
+
 ## Pages
 
 A page is a plain component that receives props injected by Inertia:
@@ -131,7 +181,8 @@ The component name passed to `Inertia.render()` maps directly to `src/pages/<nam
 
 **`Inertia.render({component, props, url})`** — renders a page into the WebView.  
 **`Inertia.redirect(url)`** — triggers a follow-up GET to `url`.  
-**`InertiaWebView({router, devServerUrl?, assetPath?})`** — the Flutter widget.
+**`InertiaWebView({router, devServerUrl?, assetPath?})`** — the Flutter widget.  
+**`InertiaRouter.sharedProps()`** — override to return props merged into every render response (page props win).
 
 ## Example
 
@@ -214,6 +265,9 @@ defineProps<{ items: { id: string; name: string }[] }>()
 
 - **After mutations, always return `Inertia.redirect()`**, not a render. The adapter follows the
   redirect with a GET and returns the rendered page to Inertia automatically.
+- **Use `sharedProps()` for data needed on every page** (e.g. current user, app name). Override it
+  in your router subclass. It is async and shallow-merged before every render response; page props
+  take precedence on key collision. Namespace keys (e.g. `auth`, `flash`) to avoid collisions.
 - **Never use `window.alert/confirm/prompt()`** — silently blocked in WKWebView.
 - **`history.pushState/replaceState` are no-ops** — patched out by `setupNativeAdapter()`.
   Do not rely on browser history; use Inertia's router for all navigation.

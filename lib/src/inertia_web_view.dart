@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
@@ -38,11 +39,16 @@ class InertiaWebView extends StatefulWidget {
   /// Defaults to `assets/www/index.html`.
   final String assetPath;
 
+  /// Called whenever the web app posts a hex color via the `nativeThemeColor`
+  /// JavaScript channel. Use this to update the native scaffold/status-bar color.
+  final void Function(Color color)? onThemeColor;
+
   const InertiaWebView({
     super.key,
     required this.router,
     this.devServerUrl,
     this.assetPath = 'assets/www/index.html',
+    this.onThemeColor,
   });
 
   @override
@@ -75,8 +81,8 @@ class _InertiaWebViewState extends State<InertiaWebView> {
           debugPrint('[InertiaWebView] loaded: $url');
           if (kDebugMode) _controller.runJavaScript(_consoleShim);
         },
-        onWebResourceError: (err) =>
-            debugPrint('[InertiaWebView] ERROR ${err.errorCode}: ${err.description} (${err.url})'),
+        onWebResourceError: (err) => debugPrint(
+            '[InertiaWebView] ERROR ${err.errorCode}: ${err.description} (${err.url})'),
       ))
       ..addJavaScriptChannel(
         'nativeInertia',
@@ -86,6 +92,20 @@ class _InertiaWebViewState extends State<InertiaWebView> {
         'FlutterConsole',
         onMessageReceived: (msg) => debugPrint('[JS] ${msg.message}'),
       );
+
+    if (widget.onThemeColor != null) {
+      _controller.addJavaScriptChannel(
+        'nativeThemeColor',
+        onMessageReceived: (msg) {
+          final color = _parseHexColor(msg.message.trim());
+          if (color != null) widget.onThemeColor!(color);
+        },
+      );
+    }
+    _controller.addJavaScriptChannel(
+      'FlutterHaptic',
+      onMessageReceived: (msg) => _onHaptic(msg.message),
+    );
 
     // Enable Safari Web Inspector on iOS/macOS (iOS 16.4+, macOS 13.3+)
     if (kDebugMode && _controller.platform is WebKitWebViewController) {
@@ -105,6 +125,24 @@ class _InertiaWebViewState extends State<InertiaWebView> {
   }
 
   /// Forwards JS console.log/warn/error to Flutter's debugPrint in debug mode.
+  static void _onHaptic(String message) {
+    switch (message.trim()) {
+      case 'heavy':
+        HapticFeedback.heavyImpact();
+        break;
+      case 'medium':
+        HapticFeedback.mediumImpact();
+        break;
+      case 'selection':
+        HapticFeedback.selectionClick();
+        break;
+      case 'light':
+      default:
+        HapticFeedback.lightImpact();
+        break;
+    }
+  }
+
   static const _consoleShim = '''
     (function() {
       const _c = window.FlutterConsole;
@@ -133,6 +171,16 @@ class _InertiaWebViewState extends State<InertiaWebView> {
     } catch (e, st) {
       debugPrint('[flutter_inertia] Error handling message: $e\n$st');
     }
+  }
+
+  /// Parses a CSS hex color string (#rrggbb or #rgb) into a Flutter [Color].
+  static Color? _parseHexColor(String hex) {
+    final s = hex.startsWith('#') ? hex.substring(1) : hex;
+    final expanded = s.length == 3 ? s.split('').map((c) => '$c$c').join() : s;
+    if (expanded.length != 6) return null;
+    final value = int.tryParse(expanded, radix: 16);
+    if (value == null) return null;
+    return Color(0xFF000000 | value);
   }
 
   @override

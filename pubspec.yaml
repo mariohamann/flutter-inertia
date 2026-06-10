@@ -1,6 +1,6 @@
 name: flutter_inertia
 description: "Inertia.js adapter for Flutter. Route Inertia.js requests to Dart handlers instead of an HTTP server."
-version: 0.1.1
+version: 0.2.0
 homepage: https://github.com/mariohamann/flutter-inertia
 repository: https://github.com/mariohamann/flutter-inertia
 issue_tracker: https://github.com/mariohamann/flutter-inertia/issues

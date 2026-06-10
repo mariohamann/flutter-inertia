@@ -13,6 +13,8 @@ node_modules/
 *.iml
 build/
 pubspec.lock
+# Keep example/pubspec.lock checked-in (required for reproducible example builds)
+!example/pubspec.lock
 
 # IDE
 .vscode/

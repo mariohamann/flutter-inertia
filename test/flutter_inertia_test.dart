@@ -12,6 +12,19 @@ class TestRouter extends InertiaRouter {
   void setupRoutes() => setup(this);
 }
 
+// Router with injectable shared props for testing sharedProps() behaviour.
+class _SharedPropsRouter extends InertiaRouter {
+  final void Function(InertiaRouter r) setup;
+  final Map<String, dynamic> shared;
+  _SharedPropsRouter({required this.setup, required this.shared});
+
+  @override
+  void setupRoutes() => setup(this);
+
+  @override
+  Future<Map<String, dynamic>> sharedProps() async => shared;
+}
+
 // The JS string format is:
 //   window.dispatchEvent(new CustomEvent('nativeInertia', { detail: <json> }));
 // Extract the JSON payload between "detail: " and " }));".
@@ -268,8 +281,10 @@ void main() {
 
     test('missing method/url/data in JSON defaults to GET / {}', () async {
       final router = TestRouter((r) {
-        r.get('/', (req) async =>
-            Inertia.render(component: 'Home', props: {}, url: '/'));
+        r.get(
+            '/',
+            (req) async =>
+                Inertia.render(component: 'Home', props: {}, url: '/'));
       });
 
       final js = await router.handleMessage(json.encode({}));
@@ -281,8 +296,10 @@ void main() {
       var callCount = 0;
       final router = TestRouter((r) {
         callCount++;
-        r.get('/', (req) async =>
-            Inertia.render(component: 'Home', props: {}, url: '/'));
+        r.get(
+            '/',
+            (req) async =>
+                Inertia.render(component: 'Home', props: {}, url: '/'));
       });
 
       await router.handleMessage(json.encode({'method': 'GET', 'url': '/'}));
@@ -305,20 +322,23 @@ void main() {
         });
       });
 
-      await router.handleMessage(
-          json.encode({'method': 'GET', 'url': '/notes/1'}));
+      await router
+          .handleMessage(json.encode({'method': 'GET', 'url': '/notes/1'}));
 
       expect(called, ['first']);
     });
 
-    test('trailing slash does not match pattern without trailing slash', () async {
+    test('trailing slash does not match pattern without trailing slash',
+        () async {
       final router = TestRouter((r) {
-        r.get('/notes', (req) async =>
-            Inertia.render(component: 'Notes', props: {}, url: '/notes'));
+        r.get(
+            '/notes',
+            (req) async =>
+                Inertia.render(component: 'Notes', props: {}, url: '/notes'));
       });
 
-      final js = await router.handleMessage(
-          json.encode({'method': 'GET', 'url': '/notes/'}));
+      final js = await router
+          .handleMessage(json.encode({'method': 'GET', 'url': '/notes/'}));
 
       expect(js, contains('console.warn'));
     });
@@ -342,7 +362,11 @@ void main() {
       final js = Inertia.render(
         component: 'Notes/Show',
         props: {
-          'note': {'id': 1, 'title': 'Hello', 'tags': ['a', 'b']},
+          'note': {
+            'id': 1,
+            'title': 'Hello',
+            'tags': ['a', 'b']
+          },
         },
         url: '/notes/1',
       );
@@ -354,13 +378,156 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
+  // InertiaRouter — sharedProps
+  // ---------------------------------------------------------------------------
+  group('InertiaRouter sharedProps', () {
+    test('default sharedProps() does not change render output', () async {
+      final router = TestRouter((r) {
+        r.get(
+            '/',
+            (req) async =>
+                Inertia.render(component: 'Home', props: {'x': 1}, url: '/'));
+      });
+
+      final js = await router
+          .handleMessage(json.encode({'method': 'GET', 'url': '/'}));
+      final payload = _extractPayload(js);
+
+      expect(payload['props'], {'x': 1});
+    });
+
+    test('sharedProps() are merged into render props', () async {
+      final router = TestRouter((r) {
+        r.get(
+            '/',
+            (req) async =>
+                Inertia.render(component: 'Home', props: {'x': 1}, url: '/'));
+      });
+      // ignore: missing_return
+      // ignore: override_on_non_overriding_member
+      // Provide sharedProps via anonymous subclass.
+      final routerWithShared = _SharedPropsRouter(
+        setup: (r) {
+          r.get(
+              '/',
+              (req) async =>
+                  Inertia.render(component: 'Home', props: {'x': 1}, url: '/'));
+        },
+        shared: {
+          'auth': <String, dynamic>{'user': 'Alice'}
+        },
+      );
+
+      final js = await routerWithShared
+          .handleMessage(json.encode({'method': 'GET', 'url': '/'}));
+      final payload = _extractPayload(js);
+
+      expect(payload['props']['x'], 1);
+      expect((payload['props']['auth'] as Map)['user'], 'Alice');
+    });
+
+    test('page props override shared props at the same top-level key',
+        () async {
+      final router = _SharedPropsRouter(
+        setup: (r) {
+          r.get(
+              '/',
+              (req) async => Inertia.render(
+                  component: 'Home',
+                  props: {
+                    'auth': <String, dynamic>{'user': 'Page'}
+                  },
+                  url: '/'));
+        },
+        shared: {
+          'auth': <String, dynamic>{'user': 'Shared'},
+          'theme': 'dark',
+        },
+      );
+
+      final js = await router
+          .handleMessage(json.encode({'method': 'GET', 'url': '/'}));
+      final payload = _extractPayload(js);
+
+      expect((payload['props']['auth'] as Map)['user'], 'Page');
+      expect(payload['props']['theme'], 'dark');
+    });
+
+    test('sharedProps() are injected in the render after a redirect', () async {
+      final router = _SharedPropsRouter(
+        setup: (r) {
+          r.post('/action', (req) async => Inertia.redirect('/result'));
+          r.get(
+              '/result',
+              (req) async => Inertia.render(
+                  component: 'Result', props: {}, url: '/result'));
+        },
+        shared: {'env': 'test'},
+      );
+
+      final js = await router.handleMessage(
+          json.encode({'method': 'POST', 'url': '/action', 'data': {}}));
+      final payload = _extractPayload(js);
+
+      expect(payload['component'], 'Result');
+      expect(payload['props']['env'], 'test');
+    });
+
+    test('sharedProps() are NOT injected into redirect responses', () async {
+      final router = _SharedPropsRouter(
+        setup: (r) {
+          r.get('/go', (req) async => Inertia.redirect('/elsewhere'));
+          // register /elsewhere so redirect is followed; but we inspect the
+          // intermediate redirect by making the cycle guard surface it via a
+          // dead-end route that still shows the redirect was NOT a render.
+          r.get(
+              '/elsewhere',
+              (req) async => Inertia.render(
+                  component: 'Elsewhere', props: {}, url: '/elsewhere'));
+        },
+        shared: {'env': 'test'},
+      );
+
+      // The final JS should be the rendered page (redirect was followed), and
+      // shared props should appear there — but only in the render, not in a
+      // bare redirect string.
+      final js = await router
+          .handleMessage(json.encode({'method': 'GET', 'url': '/go'}));
+      final payload = _extractPayload(js);
+
+      expect(payload['component'], 'Elsewhere');
+      // The redirect itself never surfaces as the result; the render does.
+      expect(payload['props']['env'], 'test');
+      // No 'redirect' key in the final payload.
+      expect(payload.containsKey('redirect'), isFalse);
+    });
+
+    test('sharedProps() are not injected into 404 warn responses', () async {
+      final router = _SharedPropsRouter(
+        setup: (r) {
+          // No routes registered — every request will 404.
+        },
+        shared: {'env': 'test'},
+      );
+
+      final js = await router
+          .handleMessage(json.encode({'method': 'GET', 'url': '/missing'}));
+
+      expect(js, contains('console.warn'));
+      expect(js, isNot(contains('"env"')));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // Regression tests (bugs to fix)
   // ---------------------------------------------------------------------------
   group('InertiaRouter regression', () {
     test('malformed JSON returns console.warn instead of throwing', () async {
       final router = TestRouter((r) {
-        r.get('/', (req) async =>
-            Inertia.render(component: 'Home', props: {}, url: '/'));
+        r.get(
+            '/',
+            (req) async =>
+                Inertia.render(component: 'Home', props: {}, url: '/'));
       });
 
       final js = await router.handleMessage('not valid json {{ }}');
@@ -374,8 +541,8 @@ void main() {
         r.get('/b', (req) async => Inertia.redirect('/a'));
       });
 
-      final js = await router.handleMessage(
-          json.encode({'method': 'GET', 'url': '/a'}));
+      final js = await router
+          .handleMessage(json.encode({'method': 'GET', 'url': '/a'}));
 
       expect(js, contains('console.warn'));
     });

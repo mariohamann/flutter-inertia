@@ -1,4 +1,9 @@
+## 0.2.0
+
+- Add `sharedProps()` to `InertiaRouter` — override to provide props automatically merged into every `Inertia.render()` response. Page-level props take precedence on key collision (shallow merge).
+
 ## 0.1.1
+
 - Improve example
 
 ## 0.1.0

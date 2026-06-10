@@ -88,6 +88,23 @@ abstract class InertiaRouter {
     return js;
   }
 
+  /// Override this method to provide props that are automatically merged into
+  /// every [Inertia.render] response, before page-level props.
+  ///
+  /// Shared props are shallow-merged: page props take precedence over shared
+  /// props when the same top-level key appears in both.
+  ///
+  /// Example:
+  /// ```dart
+  /// @override
+  /// Future<Map<String, dynamic>> sharedProps() async {
+  ///   return {
+  ///     'auth': {'displayName': await AccountController.currentDisplayName()},
+  ///   };
+  /// }
+  /// ```
+  Future<Map<String, dynamic>> sharedProps() async => {};
+
   Future<String> _dispatch(
       String method, String rawUrl, Map<String, dynamic> body) async {
     final uri = Uri.tryParse(rawUrl) ?? Uri.parse('/');
@@ -97,10 +114,41 @@ abstract class InertiaRouter {
     for (final route in _routes) {
       final request = route.tryMatch(method, path, queryParams, body);
       if (request != null) {
-        return await route.handler(request);
+        final js = await route.handler(request);
+        return await _injectSharedProps(js);
       }
     }
     return _notFound(path);
+  }
+
+  /// Merges [sharedProps] into a `Inertia.render` JS response.
+  /// Redirect and error responses are passed through unchanged.
+  Future<String> _injectSharedProps(String js) async {
+    // Only render responses carry a CustomEvent payload with a 'component' key.
+    final match = RegExp(
+      r"new CustomEvent\('nativeInertia',\s*\{\s*detail:\s*(\{.*\})\s*\}\)",
+      dotAll: true,
+    ).firstMatch(js);
+    if (match == null) return js;
+
+    Map<String, dynamic> payload;
+    try {
+      payload = json.decode(match.group(1)!) as Map<String, dynamic>;
+    } catch (_) {
+      return js;
+    }
+
+    // Only render responses have a 'component' key; redirects only have 'redirect'.
+    if (!payload.containsKey('component')) return js;
+
+    final shared = await sharedProps();
+    if (shared.isEmpty) return js;
+
+    final pageProps = (payload['props'] as Map<String, dynamic>?) ?? {};
+    // Page props override shared props at the top level.
+    payload['props'] = {...shared, ...pageProps};
+
+    return "window.dispatchEvent(new CustomEvent('nativeInertia', { detail: ${json.encode(payload)} }));";
   }
 
   /// Extracts the redirect URL from a `Inertia.redirect()` JS string, or null.
